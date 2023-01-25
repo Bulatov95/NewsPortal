@@ -1,13 +1,20 @@
+Создаём 4 пользователя:
 u1 = User.objects.create_user(username = 'User1')
 u2 = User.objects.create_user(username = 'User2')  
 u3 = User.objects.create_user(username = 'Author1') 
 u4 = User.objects.create_user(username = 'Author2')
+
+2 пользователя становятся авторами:
 Author.objects.create(authorUser = u3)
 Author.objects.create(authorUser = u4)
+
+Создаём категории:
 Category.objects.create(name = 'Политик')
 Category.objects.create(name = 'Общество') 
 Category.objects.create(name = 'Экономика')
 Category.objects.create(name = 'Спорт')
+
+Создаём 1 новость и 2 статьи:
 author1 = Author.objects.get(id=1)
 author2 = Author.objects.get(id=2)
 Post.objects.create(author = author1, categoryType = 'NW', title = 'Лавров заявил, что отношения России и Запада перешли из гибридной войны к настоящей', text = 'Происходящее на Ук
@@ -16,16 +23,44 @@ Post.objects.create(author = author2, categoryType = 'AR', title = 'На фут�
 азал белую карточку в матче 1/4 финала женского кубка Португалии между «Бенфикой» и «Спортингом» (5:0).блаблабла.')
 Post.objects.create(author = author2, categoryType = 'AR', title = 'Минфин предложил ввести уголовную ответственность за продажу контрафактных сигарет', text = 'something about sig
 arets')
+
+Присваиваем новостям и статьям категории:
 Post.objects.get(id=1).postCategory.add(Category.objects.get(id=1))      
 Post.objects.get(id=1).postCategory.add(Category.objects.get(id=2)) 
 Post.objects.get(id=2).postCategory.add(Category.objects.get(id=4)) 
 Post.objects.get(id=3).postCategory.add(Category.objects.get(id=3))
+
+Создаём комментарии к новостям и статьям:
 Comment.objects.create(commentPost = Post.objects.get(id=1), commentUser = User.objects.get(id=1), text = 'Не люблю политику!')
 Comment.objects.create(commentPost = Post.objects.get(id=1), commentUser = User.objects.get(id=2), text = 'Интересная новость!')
 Comment.objects.create(commentPost = Post.objects.get(id=3), commentUser = User.objects.get(id=1), text = 'Давно пора!')
 Comment.objects.create(commentPost = Post.objects.get(id=2), commentUser = User.objects.get(id=2), text = 'ахахахах')
+
+Ставим лайки и дислайки статьям и новостям:
 for x in range(10): Post.objects.get(id=1).like()
 for x in range(7): Post.objects.get(id=2).like()
 for x in range(3): Post.objects.get(id=2).dislike()
 for x in range(5): Post.objects.get(id=3).like()
-Comment.objects.get(id=1).like() 
+Comment.objects.get(id=1).like()
+
+Обновляем рейтинг авторов: 
+author1.update_raiting()
+author2.update_raiting()
+
+Выводим username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта):
+best = Author.objects.all().order_by('-raitingAuthor').values('authorUser__username', 'raitingAuthor')[0]
+print(best)
+
+Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье:
+bestPost = Post.objects.order_by('-raiting')[0]  
+bestPost
+for i in bestPost:
+...     i.dateCreation
+...     i.author.authorUser.username
+...     i.raiting
+...     i.title
+...     i.preview()
+
+Выводим все комментарии (дата, пользователь, рейтинг, текст) к этой статье
+Comment.objects.filter(commentPost = bestPost.id).values('dateComment', 'commentUser__username', 'raiting', 'text')
+
